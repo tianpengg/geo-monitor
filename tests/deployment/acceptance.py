@@ -22,6 +22,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import httpx
+from isolation import run_checks
 
 from internal.crawler.rules import RULES
 
@@ -609,6 +610,14 @@ def main():
         passed(
             "read-only source mount, no collector inbound port, masked persistence and final unique total"
         )
+        REPORT["isolation"] = {}
+        run_checks(
+            command=command, wait_for=wait_for, collector_id=collector_id,
+            control=control, state=state, get=get, root=ROOT, project=PROJECT, network=NETWORK,
+            report=REPORT["isolation"],
+        )
+        REPORT["unique_events"] = expected + 1
+        passed("real cgroup limits, read-only writes, CPU throttling, OOM recovery and independent origin continuity")
     proxy.shutdown()
 
 

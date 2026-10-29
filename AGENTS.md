@@ -164,6 +164,7 @@ geo-monitor/
 - Python 单元测试使用 pytest，放入 `tests/unit/` 并随模块变更交付；`tests/integration/` 覆盖真实新增日志、重启续传、网络失败、响应丢失后的重传及日志轮转。
 - 常用验证：`uv run ruff check internal cmd tests scripts`、`uv run pytest -q`、`npm --prefix web test`、`npm --prefix web run build`、`uv build --wheel --out-dir .local/build/python`；完整 Docker 验收运行 `uv run python scripts/container_smoke.py --full`，不带 `--full` 只执行基础冒烟检查。
 - 完整容器验收使用独立 Linux 测试容器、随机 Compose 项目及数据卷，通过 Docker socket 操作本次测试资源；测试 CA、固定核验证据与响应丢失代理只存在于验收环境，不加入生产接口或降低生产 HTTPS 要求。
+- `tests/deployment/isolation.py` 仅接受本次随机验收项目的采集器，验证实际 cgroup、只读写入拒绝、CPU 节流及真实 OOM 后恢复；独立合成 HTTP 源站用于停采 / 补采 / OOM 的服务连续性比较。不得用于生产目标或把手动 kill 当作 OOM。JSON 报告记录有限样本 P95、错误率、资源与测量开销，CI 保存脱敏报告，不将其解释为真实官网零影响。
 - 浏览器验证使用独立临时数据库，测试截图与日志放入被忽略的 `.local/output/` / `.local/playwright/`，不接入生产数据。
 - 有环境阻塞或生产参数未提供时，记录实际已通过的检查及边界，对应 OpenSpec 验收任务保持未完成。
 - 用户已确认先使用测试基线，生产参数稍后补充：基线任务可依据已执行结果完成；真实峰值、平均日志行大小、轮转及未压缩保留窗口在生产部署前补齐，不把合成处理速率作为生产吞吐或补采时长承诺。

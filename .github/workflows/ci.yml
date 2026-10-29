@@ -26,3 +26,11 @@ jobs:
       - run: uv run python scripts/container_smoke.py --full
       - run: uv run python scripts/container_smoke.py --full --protocol http --report .local/output/container-http-acceptance.json
       - run: uv run python tests/deployment/deploy_script.py
+      - name: Preserve acceptance reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: container-acceptance-${{ github.sha }}
+          path: .local/output/*acceptance*.json
+          if-no-files-found: warn
+          retention-days: 30

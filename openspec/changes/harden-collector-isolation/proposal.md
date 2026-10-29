@@ -25,4 +25,4 @@
 
 ## Impact
 
-CollectorConfig、采集循环和 Tailer、采集器 Compose 及示例、相关单元／集成测试和运维文档。协议与状态文件版本不变，不改官网、Nginx、数据库或界面。实际 Docker 引擎当前不可用，Linux 资源执行及容器验收保留未完成任务，不沿用旧验收代替。
+CollectorConfig、采集循环和 Tailer、采集器 Compose 及示例、相关单元／集成测试和运维文档。协议与状态文件版本不变，不改官网、Nginx、数据库或界面。本机 Engine 仍不可用，新增 Linux 资源验收在 GitHub 隔离环境执行；真实官网仅接收只读短窗口观测，两类证据分别记录，未取得的结果保持待验，不沿用旧验收代替。
