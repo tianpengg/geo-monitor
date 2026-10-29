@@ -152,6 +152,8 @@ geo-monitor/
 
 - OpenResty main 格式兼容及 1Panel 交付的 3 项任务已完成，归档于 `openspec/changes/archive/2026-10-29-support-openresty-main-logs/`；同步 `incremental-log-collection`，仍为 12 组正式规范。223 项 Python（含 12 项新增格式 / 进程链路回归）、Ruff、wheel 及严格规范校验通过，36 项部署专项跳过；没有 Vue 变更。部署源码包及摘要位于 `.local/build/releases/`，排除实际凭据、数据库、状态及本机环境，校验路径、必需文件、CRC 和逐文件摘要。一例站点的日志路径和资源曾通过 1Panel 只读核对，操作步骤见 `docs/1panel-deployment.md`；未执行真实服务器安装，原 HTTP / 隔离待验任务不变。
 
+- 首次开源交付 `prepare-public-release` 的 3 项任务已完成并归档于 `openspec/changes/archive/2026-10-29-prepare-public-release/`，同步 `self-hosted-deployment`，仍为 12 组规范。公开仓库为 `https://github.com/tianpengg/geo-monitor`，MIT 已识别，真实部署说明留在忽略目录，公开内容脱敏，首次提交采用 GitHub noreply 邮箱。17 项相关 Python、35 项前端、类型构建、Ruff、wheel 许可及元数据、锁文件、文档链接和 346 个索引文件检查通过；GitHub Actions 的完整 Python / 容器检查在发布核对时仍在运行，最终结果见运行链接，不改变原专项未验状态。记录见 `docs/public-release.md`。
+
 ## 实施与验证重点
 
 - 首次启用从文件末尾建立采集基线，重启恢复已有读取状态；后台提交成功后才推进确认位置。

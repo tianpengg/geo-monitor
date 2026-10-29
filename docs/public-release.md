@@ -31,4 +31,8 @@
 
 ## GitHub 状态
 
-账号已通过 Git 凭据管理器确认，公开仓库 [tianpengg/geo-monitor](https://github.com/tianpengg/geo-monitor) 已创建，配置了项目描述、主题，并开启私密漏洞报告入口。首次索引检查共 346 个文件，约 2.44 MB，未发现运行目录、实际配置或已知私人内容模式，Shell 脚本均为 LF。推送和 Actions 结果在远程核对后更新；尚未生成正式 Release 或预构建镜像。
+公开仓库 [tianpengg/geo-monitor](https://github.com/tianpengg/geo-monitor) 已创建并推送至 main，首次提交为 `caba3da76c70d431d30e670aac0ff1e76ac9fc0c`。采用 GitHub noreply 邮箱；匿名 API 已确认公开可读，远程提交与本地一致，README / LICENSE 内容与提交一致，GitHub 识别为 MIT。仓库配置了描述、主题并开启私密漏洞报告入口，尚未生成正式 Release 或预构建镜像。
+
+首次索引检查共 346 个文件，约 2.44 MB，未发现运行目录、实际配置或已知私人内容模式，Shell 脚本均为 LF。[首次 GitHub Actions 检查](https://github.com/tianpengg/geo-monitor/actions/runs/40856262530) 已触发；本轮核对时环境准备、依赖安装、Ruff、前端测试与构建已通过，Python 和后续容器步骤仍在执行，此处不将其提前记为通过。
+
+`prepare-public-release` 三项任务完成，许可交付规范已同步至正式 `self-hosted-deployment` 并归档。后续归档提交仅涉及说明和规范，以 `[skip ci]` 避免重复构建；源码和发布配置对应的首次检查仍继续执行，状态以上述运行链接为准。

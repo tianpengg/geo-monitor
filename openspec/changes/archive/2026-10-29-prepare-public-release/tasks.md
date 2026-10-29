@@ -10,7 +10,7 @@
 
 ## 3. GitHub 发布
 
-- [ ] 3.1 确认 GitHub 目标及认证，检查首次提交的文件与敏感内容，使用 noreply 邮箱提交推送公开 geo-monitor；远程可见性与提交一致，README / LICENSE 可读取，记录实际 CI 状态，既有专项未验收任务不误标完成。
+- [x] 3.1 确认 GitHub 目标及认证，检查首次提交的文件与敏感内容，使用 noreply 邮箱提交推送公开 geo-monitor；远程可见性与提交一致，README / LICENSE 可读取，记录实际 CI 状态，既有专项未验收任务不误标完成。
 
 ## Workflow follow-up
 
