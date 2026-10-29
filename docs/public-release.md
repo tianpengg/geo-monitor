@@ -12,7 +12,7 @@
 
 ## 验证口径
 
-此前完整 Python 为 223 passed / 36 skipped，前端最近记录为 35 项通过。维护者反馈 HTTP 实际部署及基础采集展示正常，工具尚未独立复验真实后台；这不构成完整故障矩阵、实际资源限额、OOM 或官网性能验收。两个既有活动变更继续保留未验任务。
+首次发布时，完整 Python 为 223 passed / 36 skipped，前端最近记录为 35 项通过。维护者反馈 HTTP 实际部署及基础采集展示正常，工具当时未独立复验真实后台；该反馈不构成完整故障矩阵、实际资源限额、OOM 或官网性能验收。两个既有活动变更当时保留未验任务，后续收口见文末。
 
 本次发布的实际验证：
 
@@ -33,6 +33,10 @@
 
 公开仓库 [tianpengg/geo-monitor](https://github.com/tianpengg/geo-monitor) 已创建并推送至 main，首次提交为 `caba3da76c70d431d30e670aac0ff1e76ac9fc0c`。采用 GitHub noreply 邮箱；匿名 API 已确认公开可读，远程提交与本地一致，README / LICENSE 内容与提交一致，GitHub 识别为 MIT。仓库配置了描述、主题并开启私密漏洞报告入口，尚未生成正式 Release 或预构建镜像。
 
-首次索引检查共 346 个文件，约 2.44 MB，未发现运行目录、实际配置或已知私人内容模式，Shell 脚本均为 LF。[首次 GitHub Actions 检查](https://github.com/tianpengg/geo-monitor/actions/runs/40856262530) 已触发；本轮核对时环境准备、依赖安装、Ruff、前端测试与构建已通过，Python 和后续容器步骤仍在执行，此处不将其提前记为通过。
+首次索引检查共 346 个文件，约 2.44 MB，未发现运行目录、实际配置或已知私人内容模式，Shell 脚本均为 LF。[首次 GitHub Actions 检查](https://github.com/tianpengg/geo-monitor/actions/runs/40856262530) 已全部成功：Linux Python 257 passed / 2 skipped，前端、Ruff、wheel、Bash 语法、HTTP / HTTPS 各 8 组完整矩阵及独立部署执行器 36 项均通过。两种 Python 运行计数有重叠，不累计为唯一用例数。收口依据见 [双协议验收记录](http-deployment-verification.md)。
 
-`prepare-public-release` 三项任务完成，许可交付规范已同步至正式 `self-hosted-deployment` 并归档。后续归档提交仅涉及说明和规范，以 `[skip ci]` 避免重复构建；源码和发布配置对应的首次检查仍继续执行，状态以上述运行链接为准。
+`prepare-public-release` 三项任务完成，许可交付规范已同步至正式 `self-hosted-deployment` 并归档。后续归档提交仅涉及说明和规范，以 `[skip ci]` 避免重复构建；源码和发布配置对应的首次检查已完成，状态以上述运行链接为准。
+
+后续 [CI 40895324515](https://github.com/tianpengg/geo-monitor/actions/runs/40895324515) 的 267 项 Python / 2 跳过、独立部署 36 项、前端及两协议各 9 组矩阵全部通过，新增了实际 cgroup、CPU 节流、写入拒绝、真实 OOM 和独立合成源站持续服务证据；两份 Artifact 已下载并核对摘要。维护者另提供了官网只读短窗口观测，见 [低干扰验收](collector-isolation-verification.md)。两项收口完成后以验证分支同步 main，后续只涉及说明和归档的提交不重复运行同一套故障测试。
+
+最终收口检查确认运行代码、部署入口、测试及 CI 配置与上述通过的提交一致；24 个说明 / 规范文件、39 个本地链接和 350 个公开候选文件检查通过，12 组正式规范严格校验通过，两个变更均已归档。归档提交使用 `[skip ci]`，对应测试结果引用已通过的验证提交，不把跳过的新运行标为执行成功。

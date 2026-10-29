@@ -142,19 +142,22 @@ geo-monitor/
 - 目录整理 6 项任务已实现并验收，归档于 `openspec/changes/archive/2026-10-28-reorganize-project-structure/`；同步 `self-hosted-deployment`，正式规范仍为 12 组。当前 117 项 Python、19 项前端、类型与构建、wheel、隔离浏览器和 8 组完整 Linux Docker / HTTPS 验收通过，详见 `docs/structure-verification.md`。Python 包直接为 `internal`，不得恢复旧包名层；本次未接入真实官网。
 - 独立预览须能直接离线打开，优先内嵌本地素材，不修改生产依赖、后台接口或既有统计口径；记录浏览器与视觉验证结果。
 - 一条命令部署的 3 项任务已完成，归档于 `openspec/changes/archive/2026-10-29-add-one-command-deployment/`；已同步 `self-hosted-deployment`。24 项 Linux 回归（包含真实首次部署、登录和重复部署保留数据）及 3 项既有相关回归通过，记录见 `docs/operations.md`；1Panel 公网 HTTPS、反向代理和真实官网接入仍须部署时完成。
-- HTTP / HTTPS 可选部署代码已交付，活动变更为 `support-http-deployment`。本轮 120 项 Python、21 项前端测试、类型检查、构建、Ruff、Bash 语法及配置解析通过；Docker Desktop 启动错误导致 Linux / 实际容器验收未完成。用户已确认暂不恢复 Docker、先交付并注明未验收项；相关任务保持未完成，未同步正式规范或归档，验证边界见 `docs/operations.md`。
+- HTTP / HTTPS 首次本地交付记录：120 项 Python、21 项前端测试、类型检查、构建、Ruff、Bash 语法及配置解析通过；当时 Docker Desktop 启动错误导致实际容器验收未完成，用户确认先交付并保留待验任务。后续已由 GitHub Linux CI 收口并归档，见下方最新记录及 `docs/http-deployment-verification.md`。
 - 动态爬虫规则的 4 项任务已完成，归档于 `openspec/changes/archive/2026-10-29-manage-crawler-rules/`；已同步 `crawler-identification` 与 `admin-dashboard-interface`，仍为 12 组正式规范。145 项 Python（含 25 项新增规则管理）、25 项前端、类型构建、Ruff、wheel 及隔离浏览器通过；窄屏与退出后迟到响应已验证，详见 `docs/crawlers.md`。36 项 Linux / Docker 部署测试继续跳过，HTTP 活动变更与真实官网接入的未验收状态不变。
 - 规则表格及弹窗调整的 3 项任务已完成，归档于 `openspec/changes/archive/2026-10-29-compact-crawler-rule-management/`；已同步 `admin-dashboard-interface`。25 项前端回归、类型构建及实际浏览器验收通过，覆盖保存成功、失败保留草稿、取消、键盘焦点、忙碌保护及 320 px 窄屏，记录见 `docs/crawlers.md`；没有后端变更，未重跑 Python 或 Docker 验收。
 - Sitemap 自动同步的 4 项任务已完成，归档于 `openspec/changes/archive/2026-10-29-sync-remote-sitemap/`；已同步 `content-inventory`，仍为 12 组正式规范。194 项 Python（含 49 项新增）、25 项前端、类型构建、Ruff、wheel 及隔离浏览器通过，记录见 `docs/operations.md`。覆盖受限获取、索引 / gzip、事务合并、失败保留、调度重启、旧任务及会话防护和 320 px 窄屏；36 项部署测试继续跳过，HTTP 活动任务及真实官网未验收状态保持不变。
 - 内容目录紧凑布局的 3 项任务已完成，归档于 `openspec/changes/archive/2026-10-29-compact-content-inventory/`；同步 `admin-dashboard-interface`，仍为 12 组规范。30 项前端、类型构建与实际浏览器通过，覆盖两个弹窗成功及失败、文件边界、忙碌、键盘、320 px、分页筛选和退出后迟到响应；详见 `docs/operations.md`。仅前端变化，没有重跑 Python、wheel 或 Docker；原部署及真实官网待验边界不变。
 - 官网配置易用性 2 项任务已完成，归档于 `openspec/changes/archive/2026-10-29-clarify-site-settings/`；同步 `admin-dashboard-interface`。35 项前端、类型构建和隔离浏览器通过，覆盖时区搜索、回退及保存重载、IP 默认与存量状态、键盘和 320 px；验收见 `docs/operations.md`。仅前端及说明变化，未重跑 Python、wheel 或 Docker，真实官网与部署未验收边界保持不变。
-- 功能闭环与采集低干扰审查使用活动变更 `harden-collector-isolation`，本地 4 / 5 项完成，结论和命令结果见 `docs/completeness-audit.md`。211 项 Python、35 项前端、类型构建、Ruff、wheel、严格规范与合成共存基线通过，36 项部署测试跳过。采集读取、节流、状态及 Compose 边界已增加实现与回归；实际容器限额、只读运行、OOM 恢复和官网延迟 / 错误率属于第 3.1 项待验，Docker 未恢复前不得标完成、同步正式规范或归档。`support-http-deployment` 仍保持原待验状态，不用历史 HTTPS 结果替代当前双协议验收。
+- 功能闭环与低干扰首次本地审查记录：`harden-collector-isolation` 当时 4 / 5 项完成，211 项 Python、35 项前端、类型构建、Ruff、wheel、严格规范与合成共存基线通过，36 项部署测试因 Docker 不可用跳过。采集读取、节流、状态及 Compose 边界已实现；实际限额、只读运行、OOM 及官网观测当时保留待验，未提前归档。后续将隔离故障和真实官网只读观测分为两项任务并完成，见下方最新记录；历史本地数据保留于 `docs/completeness-audit.md`。
 
 - OpenResty main 格式兼容及 1Panel 交付的 3 项任务已完成，归档于 `openspec/changes/archive/2026-10-29-support-openresty-main-logs/`；同步 `incremental-log-collection`，仍为 12 组正式规范。223 项 Python（含 12 项新增格式 / 进程链路回归）、Ruff、wheel 及严格规范校验通过，36 项部署专项跳过；没有 Vue 变更。部署源码包及摘要位于 `.local/build/releases/`，排除实际凭据、数据库、状态及本机环境，校验路径、必需文件、CRC 和逐文件摘要。一例站点的日志路径和资源曾通过 1Panel 只读核对，操作步骤见 `docs/1panel-deployment.md`；未执行真实服务器安装，原 HTTP / 隔离待验任务不变。
 
 - 首次开源交付 `prepare-public-release` 的 3 项任务已完成并归档于 `openspec/changes/archive/2026-10-29-prepare-public-release/`，同步 `self-hosted-deployment`，仍为 12 组规范。公开仓库为 `https://github.com/tianpengg/geo-monitor`，MIT 已识别，真实部署说明留在忽略目录，公开内容脱敏，首次提交采用 GitHub noreply 邮箱。17 项相关 Python、35 项前端、类型构建、Ruff、wheel 许可及元数据、锁文件、文档链接和 346 个索引文件检查通过；GitHub Actions 的完整 Python / 容器检查在发布核对时仍在运行，最终结果见运行链接，不改变原专项未验状态。记录见 `docs/public-release.md`。
 
 ## 实施与验证重点
+
+- HTTP 验收已由真实 GitHub Linux CI `40856262530` 收口：257 项 Python / 2 个普通入口跳过、独立 Docker 部署 36 项及 HTTP / HTTPS 各 8 组矩阵通过。`support-http-deployment` 3 / 3 完成并同步两组正式规范，归档于 `openspec/changes/archive/2026-10-29-support-http-deployment/`，依据见 `docs/http-deployment-verification.md`。本机 Engine 仍不可用；低干扰由下一条独立专项证据确认。
+- 低干扰验收的 6 / 6 项任务已完成，`harden-collector-isolation` 同步两组规范并归档于 `openspec/changes/archive/2026-10-29-harden-collector-isolation/`，当前没有活动变更，仍为 12 组正式规范。GitHub Linux CI `40895324515`：267 项 Python / 2 个普通入口跳过、独立 Docker 部署 36 项、前端 35 项及类型构建、Ruff、wheel、Bash 均通过；两协议各 9 组矩阵确认实际 cgroup、CPU 节流、只读边界，各 1 次真实 OOM / 自动重启后续传去重及独立合成源站持续服务。维护者回传的官网只读 20 次请求均为 200、P95 13.866 ms、采集内存 30.73–30.84 MiB；工具未直接操作生产服务器，未在生产故障注入。证据和 Artifacts 摘要见 `docs/collector-isolation-verification.md`。生产峰值、长期负载、磁盘争用和轮转保留窗口仍按实际环境复验，无生产停采对照，不作零影响承诺。
 
 - 首次启用从文件末尾建立采集基线，重启恢复已有读取状态；后台提交成功后才推进确认位置。
 - 重传使用稳定事件标识去重；心跳独立于业务日志，安静网站也能报告采集健康状态。

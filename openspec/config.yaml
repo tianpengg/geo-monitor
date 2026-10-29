@@ -2,6 +2,7 @@ schema: spec-driven
 
 context: |
   项目名称：geo-monitor。
+  最新验收状态（2026-10-29）：support-http-deployment 的 3 项和 harden-collector-isolation 的 6 项均已完成、同步正式规范并归档，当前没有活动变更，正式规范为 12 组。GitHub Linux CI 40895324515 通过 267 项 Python / 2 个普通入口跳过、独立部署 36 项、前端 35 项及 HTTP / HTTPS 各 9 组矩阵；实际 cgroup、CPU 节流、只读拒绝、真实 OOM / 自动恢复及独立合成源站持续服务均有 JSON 证据。维护者另回传真实官网 20 次只读观测，全部 HTTP 200、P95 13.866 ms、采集内存 30.73–30.84 MiB。本机 Engine 仍不可用；结果见 docs/http-deployment-verification.md 和 docs/collector-isolation-verification.md，不把合成或有限窗口观测解释为生产零影响。下方历次验收计数和待验描述仅表示当时状态。
   公开仓库为 https://github.com/tianpengg/geo-monitor，用户选择 MIT；项目及第三方许可随对应源码 / Python 包 / 镜像 / 采集器分发保留。公开说明使用保留地址和示例域名，不公开私人部署说明或实际运行数据。首次开源发布记录见 docs/public-release.md；维护者基础接入反馈与完整专项验收保持区分。
   MVP 目标：用户在官网服务器安装一次采集器，持续查看可识别的 AI 爬虫访问。
   部署边界：一个管理员、一个官网、一条独立的 Nginx Combined 日志来源；支持 Linux、宝塔及 Docker。
@@ -9,10 +10,10 @@ context: |
   Python 代码直接采用 internal/ 包，统一 internal.* 导入，cmd/server/main.py 和 cmd/collector/main.py 提供显式入口，前端位于 web/src/，Python 单元测试位于 tests/unit/；依赖已锁定在 uv.lock 和 web/package-lock.json。
   SQLite 含官方 WAL-reset 修复的版本启用 WAL，其他版本使用事务性的 DELETE 模式；容量验收记录实际模式。
   采集器作为独立进程和容器运行，不挂在 FastAPI 生命周期或 Web worker 启动任务中。
-  活动变更 harden-collector-isolation 补齐低干扰边界：每轮新增源数据读取 256 KiB（元数据与身份锚点除外），超长行只保留内存扫描游标、完整后确认，空闲不重复落盘，退休代次回收，确认保存失败回退内存位置及计数。积压等待默认 0.25 秒、范围 0.05–30 秒，失败退避和独立心跳保持。Compose 默认 0.25 CPU / 128 MiB / 64 PID、只读根文件系统、16 MiB tmpfs 及有限输出日志；CPU / 内存可显式覆盖。构建开销不受运行限额约束，真实 cgroup、OOM、官网延迟与错误率待 Docker / 生产接入验收；不宣称零影响，报告见 docs/completeness-audit.md，未验收前不归档或同步为全部完成。
+  已归档的 harden-collector-isolation 补齐低干扰边界：每轮新增源数据读取 256 KiB（元数据与身份锚点除外），超长行只保留内存扫描游标、完整后确认，空闲不重复落盘，退休代次回收，确认保存失败回退内存位置及计数。积压等待默认 0.25 秒、范围 0.05–30 秒，失败退避和独立心跳保持。Compose 默认 0.25 CPU / 128 MiB / 64 PID、只读根文件系统、16 MiB tmpfs 及有限输出日志；CPU / 内存可显式覆盖。构建开销不受运行限额约束，实际资源及隔离故障已由 Linux CI 验证，真实官网有限观测单独记录；生产峰值、长期负载、磁盘争用及轮转保留窗口仍需复验，没有生产停采对照，不宣称零影响。
   只采集首次启用后的新增日志；按分钟更新看板；源站日志可能不包含 CDN 缓存命中和边缘拦截请求。
   日志格式兼容标准 Combined 和末尾恰好多一个带引号字段的 OpenResty main；预检与运行共用严格口径，附加字段不出解析器、不用于覆盖第一列 IP 或自动信任代理。已在一例 1Panel 站点只读核对宿主机日志，通用部署指引为 docs/1panel-deployment.md。维护者后续反馈已完成 HTTP 部署及基础采集展示测试；该反馈尚未由工具独立复验，不替代完整故障及资源专项验收。
-  support-openresty-main-logs 已完成 3 项任务并同步归档，新增 12 项回归，完整 Python 为 223 passed / 36 skipped，Ruff、wheel 及规范校验通过；源码交付包不含实际配置和运行数据。原 HTTP 部署及采集隔离的 Linux / 真实官网待验事项不变。
+  support-openresty-main-logs 已完成 3 项任务并同步归档，新增 12 项回归，当时完整 Python 为 223 passed / 36 skipped，Ruff、wheel 及规范校验通过；源码交付包不含实际配置和运行数据。当时未收口的 HTTP 和隔离专项已由上述后续 CI 及只读观测完成。
   原始 IP 只用于核验，业务持久化数据须脱敏；采集器仅保存位置和重试元数据，从保留的源日志重读未确认数据。
   国内平台按已确认口径展示：Kimi 三种 UA；Bytespider 为字节跳动爬虫；HySpider 为腾讯混元训练爬虫；不得推定豆包或元宝归属。
   千问、DeepSeek 无已确认专属规则时标记识别能力待完善，不将未知请求直接归属给它们。

@@ -32,7 +32,7 @@
 
 服务端 app.py 只组装应用；api 按功能组织 HTTP，schemas 定义请求模型，dependencies 提供认证与官网上下文，lifecycle 管理初始化和证据维护。services 包含查询、采集接收和分析操作，storage 提供连接、迁移、事务与备份；采集器不访问服务端数据库。
 
-采集器 `tailer.py` 限制单轮新增源数据读取 256 KiB，异常长行只保留内存扫描位置，完整后确认；状态内容不变不写，退休代次回收，保存确认失败回退内存位置和计数。`runtime.py` 在积压批次之间正等待，心跳独立。`deploy/collector.compose.yaml` 提供可配置 CPU / 内存、PID、只读根文件系统及输出日志上限，实际 Linux 执行仍待验；不通过更改源站或扩大权限解决隔离问题。`scripts/collector_baseline.py` 仅在临时目录对比合成写入与采集共存，不连接官网或替代容器 / 生产性能验收；当前结论见 `docs/completeness-audit.md`。
+采集器 `tailer.py` 限制单轮新增源数据读取 256 KiB，异常长行只保留内存扫描位置，完整后确认；状态内容不变不写，退休代次回收，保存确认失败回退内存位置和计数。`runtime.py` 在积压批次之间正等待，心跳独立。`deploy/collector.compose.yaml` 提供可配置 CPU / 内存、PID、只读根文件系统及输出日志上限，实际 cgroup、节流、写入拒绝和 OOM 恢复已由 `tests/deployment/isolation.py` 在隔离 Linux CI 验证；不通过更改源站或扩大权限解决隔离问题。`scripts/collector_baseline.py` 仅在临时目录对比合成写入与采集共存，不替代真实官网性能；有限窗口观测及当前边界见 `docs/collector-isolation-verification.md`。
 
 Vue 的 App.vue 只提供工作区与选择页面，layouts 管理导航和外壳，views 绑定页面。公共输入、下拉、日历及弹层放 components/ui，图表、健康、记录和分析展示放 components/dashboard。会话、筛选、官网设置分别由 composables 管理，useWorkspace 负责页面之间的请求与刷新编排。api 分离 HTTP、认证及监测接口，types、utils、styles、assets 各负其责。
 
