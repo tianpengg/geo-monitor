@@ -1,10 +1,11 @@
 """Persistent single-site Sitemap scheduling with stale-result protection."""
 
+import json
 import secrets
 import threading
 import time
 
-from internal.server.services.inventory import merge_pages
+from internal.server.services.inventory import assert_current_site, merge_pages
 from internal.server.services.sitemap import SitemapError, collect_pages, sitemap_url
 
 INTERVAL = 24 * 3600
@@ -36,7 +37,7 @@ class SitemapSync:
         return result
 
     def configure(self, site, url, enabled):
-        url = sitemap_url(url, site["domain"])
+        url = sitemap_url(url, site["domain"], site.get("aliases", ()))
         now = time.time()
         with self.database.transaction() as conn:
             self._assert_current(conn, site)
@@ -78,16 +79,15 @@ class SitemapSync:
 
     @staticmethod
     def _assert_current(conn, site):
-        row = conn.execute("SELECT domain FROM site WHERE id=?", (site["id"],)).fetchone()
-        if not row or row["domain"] != site["domain"]:
-            raise ValueError("官网已变更，请刷新后重新配置")
+        assert_current_site(conn, site)
 
     def run_due(self):
         now = time.time()
         token = secrets.token_hex(16)
         with self.database.transaction() as conn:
             row = conn.execute(
-                """SELECT s.* FROM sitemap_sources s JOIN site t ON t.id=s.site_id AND t.domain=s.host
+                """SELECT s.*,t.aliases AS site_aliases FROM sitemap_sources s
+                JOIN site t ON t.id=s.site_id AND t.domain=s.host
                 WHERE s.next_run_at<=? AND (s.lease_until IS NULL OR s.lease_until<=?)
                 AND (s.enabled=1 OR s.state IN ('pending','running')) LIMIT 1""", (now, now),
             ).fetchone()
@@ -100,7 +100,9 @@ class SitemapSync:
                 (now, token, now + LEASE_SECONDS, job["site_id"], job["host"]),
             )
         try:
-            pages, files = collect_pages(job["url"], job["host"], self.fetch)
+            pages, files = collect_pages(
+                job["url"], job["host"], self.fetch, aliases=json.loads(job["site_aliases"]),
+            )
             with self.database.transaction() as conn:
                 if not self._current_job(conn, job, token):
                     return True

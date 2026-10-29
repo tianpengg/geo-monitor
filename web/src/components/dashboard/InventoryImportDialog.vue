@@ -32,7 +32,7 @@ async function upload() {
     <form :id="formId" class="inventory-import-form" @submit.prevent="upload">
       <p v-if="message" ref="alert" class="notice danger" role="alert" tabindex="-1">{{ message }}</p>
       <label>目录文件<UiFilePicker v-model="file" :disabled="busy || reading" @update:model-value="fileError = ''" /></label>
-      <p class="paragraph muted">支持 Sitemap urlset XML、CSV（url 或 path，可选 title）和 JSON 数组。仅接受当前官网页面，每个文件最多 1 MiB，目录最多 10,000 页；仅保存路径与标题，不访问页面正文。</p>
+      <p class="paragraph muted">支持 Sitemap urlset XML、CSV（url 或 path，可选 title）和 JSON 数组。完整地址须属于官网主域名或“官网配置”中已保存的别名，每个文件最多 1 MiB，目录最多 10,000 页；同路径合并，只保存路径与标题，不访问页面正文。</p>
       <p class="notice neutral">本地 Sitemap 索引需先展开为页面文件，也可在“Sitemap 配置”中填写索引地址自动同步。</p>
       <details class="format-help"><summary><UiIcon name="chevron-right" />查看文件示例</summary><pre>CSV：
 path,title

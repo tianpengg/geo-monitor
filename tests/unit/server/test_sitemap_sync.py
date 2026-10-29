@@ -169,3 +169,64 @@ def test_real_lifespan_worker_processes_saved_queue_after_restart(admin, source)
         assert admin.get(BASE).json()["state"] == "success"
         assert admin.get("/api/inventory").json()["items"][0]["path"] == "/after-restart"
     assert app.state.sitemap.stop.is_set()
+
+
+def test_registering_alias_recovers_failed_sync_after_restart_and_removal_keeps_directory(admin, source):
+    service = admin.app.state.sitemap
+    configure(admin)
+    def fixture(*args):
+        return xml('https://www.example.com/a', 'https://example.com/a', 'https://www.example.com/b')
+    service.fetch = fixture
+    service.run_due()
+    assert admin.get(BASE).json()['state'] == 'failed'
+    assert admin.get('/api/inventory').json()['total'] == 0
+    admin.put('/api/site', json={'domain': 'example.com', 'aliases': ['www.example.com']}).raise_for_status()
+    assert admin.get(BASE).json()['state'] == 'pending'
+    restarted = SitemapSync(service.database, fetch=fixture)
+    assert restarted.run_due()
+    status = admin.get(BASE).json()
+    assert status['state'] == 'success' and status['pages'] == 2
+    assert admin.get('/api/inventory').json()['total'] == 2
+    admin.put('/api/site', json={'domain': 'example.com', 'aliases': []}).raise_for_status()
+    assert restarted.run_due()
+    removed = admin.get(BASE).json()
+    assert removed['state'] == 'failed' and removed['last_success_at'] == status['last_success_at']
+    assert removed['pages'] == 2 and admin.get('/api/inventory').json()['total'] == 2
+
+
+@pytest.mark.parametrize('fail', [False, True])
+@pytest.mark.parametrize('restore', [False, True])
+def test_alias_change_invalidates_old_success_and_failure_even_when_restored(admin, source, fail, restore):
+    admin.put('/api/site', json={'domain': 'example.com', 'aliases': ['www.example.com']}).raise_for_status()
+    service = admin.app.state.sitemap
+    configure(admin)
+    old_revision = admin.get(BASE).json()['revision']
+
+    def fetch(*args):
+        admin.put('/api/site', json={'domain': 'example.com', 'aliases': ['alt.example.com']}).raise_for_status()
+        if restore:
+            admin.put('/api/site', json={'domain': 'example.com', 'aliases': ['www.example.com']}).raise_for_status()
+        if fail:
+            raise SitemapError('旧任务的失败不能覆盖新配置')
+        return xml('https://www.example.com/stale')
+
+    service.fetch = fetch
+    assert service.run_due()
+    status = admin.get(BASE).json()
+    assert status['state'] == 'pending' and status['revision'] > old_revision
+    assert status['last_success_at'] is None and status['last_error'] is None
+    assert admin.get('/api/inventory').json()['total'] == 0
+
+
+def test_alias_update_keeps_pause_and_rejects_stale_configuration(admin, source):
+    configure(admin, enabled=False)
+    stale = admin.get('/api/site').json()
+    admin.put('/api/site', json={'domain': 'example.com', 'aliases': ['www.example.com']}).raise_for_status()
+    service = admin.app.state.sitemap
+    assert admin.get(BASE).json()['state'] == 'paused' and not service.run_due()
+    with pytest.raises(ValueError, match='配置已变更'):
+        service.configure(stale, 'https://example.com/stale.xml', True)
+    assert admin.get(BASE).json()['url'] == 'https://example.com/map.xml'
+    configure(admin, 'https://www.example.com/map.xml').raise_for_status()
+    service.fetch = lambda url, host, deadline: xml('https://www.example.com/allowed') if host == 'www.example.com' else b'invalid'
+    assert service.run_due() and admin.get(BASE).json()['state'] == 'success'

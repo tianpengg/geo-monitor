@@ -1,3 +1,4 @@
+import ipaddress
 import re
 from typing import Literal
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -30,6 +31,7 @@ class SiteInput(BaseModel):
     domain: str = Field(max_length=253)
     timezone: str = "Asia/Shanghai"
     client_ip_mode: Literal["unknown", "trusted"] = "unknown"
+    aliases: list[str] | None = Field(default=None, max_length=10)
 
     @field_validator("domain")
     @classmethod
@@ -44,6 +46,26 @@ class SiteInput(BaseModel):
         ):
             raise ValueError("请填写不含协议、端口或路径的官网域名")
         return normalized
+
+    @field_validator("aliases")
+    @classmethod
+    def domain_aliases(cls, values):
+        if values is None:
+            return None
+        aliases = set()
+        for value in values:
+            if len(value) > 253:
+                raise ValueError("别名域名过长")
+            alias = cls.domain_name(value)
+            if len(alias) > 253:
+                raise ValueError("别名域名过长")
+            try:
+                ipaddress.ip_address(alias)
+            except ValueError:
+                aliases.add(alias)
+            else:
+                raise ValueError("官网别名必须为域名，不能填写 IP 地址")
+        return sorted(aliases)
 
     @field_validator("timezone")
     @classmethod

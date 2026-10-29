@@ -68,6 +68,9 @@ MIGRATIONS = [
             pages INTEGER, files INTEGER, added INTEGER, run_token TEXT, lease_until REAL,
             PRIMARY KEY(site_id,host))""",
     ],
+    [
+        "ALTER TABLE site ADD COLUMN aliases TEXT NOT NULL DEFAULT '[]'",
+    ],
 ]
 
 

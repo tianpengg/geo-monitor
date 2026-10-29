@@ -55,7 +55,7 @@ async function key(event: KeyboardEvent) {
     if (open.value) close(true)
     return
   }
-  if (event.key === 'Escape') {
+  if (event.key === 'Escape' && open.value) {
     event.preventDefault()
     event.stopPropagation()
     close(true)

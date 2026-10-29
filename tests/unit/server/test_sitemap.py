@@ -32,6 +32,28 @@ def test_index_gzip_deduplicates_paths_and_fetches_only_sitemap_files():
     assert [call.args[0] for call in fetch.call_args_list] == list(files)
 
 
+def test_explicit_aliases_cover_sources_children_and_pages_with_actual_fetch_hosts():
+    files = {
+        "https://www.example.com/map.xml": index("https://example.com/a.xml", "https://www.example.com/b.xml"),
+        "https://example.com/a.xml": urlset("https://example.com/page"),
+        "https://www.example.com/b.xml": urlset("https://www.example.com/page?q=1", "https://www.example.com/other"),
+    }
+    fetch = MagicMock(side_effect=lambda url, host, deadline: files[url])
+    pages, count = sitemap.collect_pages(
+        "https://www.example.com/map.xml", "example.com", fetch, aliases=["www.example.com"],
+    )
+    assert pages == {"/page": "", "/other": ""} and count == 3
+    assert [(call.args[0], call.args[1]) for call in fetch.call_args_list] == [
+        (url, "www.example.com" if "//www." in url else "example.com") for url in files
+    ]
+    with pytest.raises(sitemap.SitemapError):
+        sitemap.collect_pages("https://www.example.com/map.xml", "example.com", fetch)
+    with pytest.raises(sitemap.SitemapError):
+        sitemap.collect_pages("https://example.com/map.xml", "example.com",
+                              lambda *args: urlset("https://sub.example.com/foreign"),
+                              aliases=["www.example.com"])
+
+
 @pytest.mark.parametrize("url", [
     "file:///etc/passwd", "http://127.0.0.1/map.xml", "https://evil.example/map.xml",
     "https://name:secret@example.com/map.xml", "https://example.com:444/map.xml",
@@ -81,19 +103,22 @@ def test_whole_sitemap_job_bounds(monkeypatch, mode):
         assert fetch.call_count == 1  # Validate all child hosts before downloading any child.
 
 
+@pytest.mark.parametrize("host", ["example.com", "www.example.com"])
 @pytest.mark.parametrize("address", ["127.0.0.1", "169.254.169.254", "10.0.0.1", "::1", "224.0.0.1"])
-def test_dns_private_target_rejected_before_connection(monkeypatch, address):
+def test_dns_private_target_rejected_before_connection(monkeypatch, address, host):
     monkeypatch.setattr(sitemap.socket, "getaddrinfo", lambda *a, **k: [(2, 1, 6, "", (address, 80))])
     connector = MagicMock()
     monkeypatch.setattr(sitemap.socket, "create_connection", connector)
     with pytest.raises(sitemap.SitemapError):
-        sitemap.download("http://example.com/map.xml", "example.com", time.monotonic() + 60)
+        sitemap.download(f"http://{host}/map.xml", host, time.monotonic() + 60)
     connector.assert_not_called()
 
 
+@pytest.mark.parametrize("host", ["example.com", "www.example.com"])
 @pytest.mark.parametrize("mode", ["http", "https", "redirect", "oversize", "certificate"])
-def test_network_pins_public_ip_tls_hostname_and_size(monkeypatch, mode):
-    monkeypatch.setattr(sitemap.socket, "getaddrinfo", lambda *a, **k: [(2, 1, 6, "", ("8.8.8.8", 80))])
+def test_network_pins_public_ip_tls_hostname_and_size(monkeypatch, mode, host):
+    resolver = MagicMock(return_value=[(2, 1, 6, "", ("8.8.8.8", 80))])
+    monkeypatch.setattr(sitemap.socket, "getaddrinfo", resolver)
     raw, tls, context, connection = MagicMock(), MagicMock(), MagicMock(), MagicMock()
     context.wrap_socket.return_value = tls
     connector = MagicMock(return_value=raw)
@@ -107,17 +132,18 @@ def test_network_pins_public_ip_tls_hostname_and_size(monkeypatch, mode):
     if mode == "certificate":
         context.wrap_socket.side_effect = ssl.SSLCertVerificationError("not trusted")
     secure = mode != "http"
-    url = f"{'https' if secure else 'http'}://example.com/map.xml?v=1"
+    url = f"{'https' if secure else 'http'}://{host}/map.xml?v=1"
     if mode in {"redirect", "oversize", "certificate"}:
         with pytest.raises((ValueError, ssl.SSLCertVerificationError)):
-            sitemap.download(url, "example.com", time.monotonic() + 60)
+            sitemap.download(url, host, time.monotonic() + 60)
     else:
-        assert sitemap.download(url, "example.com", time.monotonic() + 60) == b"xml"
+        assert sitemap.download(url, host, time.monotonic() + 60) == b"xml"
         assert connection.request.call_args.args == ("GET", "/map.xml?v=1")
         assert connection.request.call_args.kwargs["headers"]["Accept-Encoding"] == "identity"
     assert connector.call_args.args == (("8.8.8.8", 443 if secure else 80),)
+    resolver.assert_called_once_with(host, 443 if secure else 80, type=socket.SOCK_STREAM)
     if secure:
-        context.wrap_socket.assert_called_once_with(raw, server_hostname="example.com")
+        context.wrap_socket.assert_called_once_with(raw, server_hostname=host)
     else:
         context.wrap_socket.assert_not_called()
     connection.close.assert_called_once()

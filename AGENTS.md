@@ -107,7 +107,8 @@ geo-monitor/
 - 采集器 `tailer.py` 每轮新增源数据读取预算为 256 KiB（不含元数据及身份锚点），超长行只保存内存扫描游标，完整后确认；状态无变化不落盘，退休代次及时回收，本地确认写失败回退内存位置及计数。`runtime.py` 的积压等待默认 0.25 秒、允许 0.05–30 秒，保持独立心跳及失败退避；不得恢复无等待的积压循环或无界超长行读取。
 - `deploy/collector.compose.yaml` 默认配置 0.25 CPU、128 MiB、64 PID、只读根文件系统及有限输出日志；CPU / 内存可显式覆盖，不通过修改官网或扩大日志权限绕过隔离。构建与运行都有开销，配置解析不等于真实引擎执行或官网零影响；`scripts/collector_baseline.py` 仅验证临时合成日志写入与采集共存，不能代替真实官网或 cgroup 验收。
 - 页面聚合、精确详情、明细和 CSV 使用共用事件过滤器；导出不带分页游标，超过 10000 条或 20 MiB 明确拒绝，不能静默截断。
-- 内容目录保留本地 UTF-8 urlset XML、CSV / JSON 导入（1 MiB / 10000 页，不访问上传的地址），并支持配置官网同主机标准 HTTP/HTTPS Sitemap 自动同步。`services/sitemap.py` 负责固定公网 IP 获取和 XML / 单层索引 / gzip 校验，最多 20 文件、单文件传输和解压各 1 MiB、累计解压 10 MiB / 10000 页，拒绝跳转、内网、DTD 和实体，不访问页面正文；不放宽官方证据的 HTTPS 限制。
+- 内容目录保留本地 UTF-8 urlset XML、CSV / JSON 导入（1 MiB / 10000 页，不访问上传的地址），并支持官网主域或已登记别名的标准 HTTP/HTTPS Sitemap 自动同步。`services/sitemap.py` 负责固定公网 IP 获取和 XML / 单层索引 / gzip 校验，最多 20 文件、单文件传输和解压各 1 MiB、累计解压 10 MiB / 10000 页，拒绝跳转、内网、DTD 和实体，不访问页面正文；不放宽官方证据的 HTTPS 限制。
+- 官网 `aliases` 是管理员明确登记的最多 10 个精确域名，保存在 site 表 JSON 列，默认空，标准化去重并排除主域；不放行通配子域或 IP，不创建第二站。Sitemap 主文件、子文件、页面及本地导入使用同一允许集合，目录归入主域并按路径去重；实际下载器必须使用每个 URL 的主机执行公网 DNS / 固定 IP / TLS，不用主域替别名担保。别名或主域变化在同一事务内递增同步修订、失效运行 token，启用配置重排、暂停保持，旧结果不能提交；目录和最后成功保留。Vue 的 `utils/siteAliases.ts` 处理分隔和数量，官网表单保存 / 载入受会话代次保护、退出清理草稿，定时刷新不得回填未保存字段。
 - `services/sitemap_sync.py` 与 `sitemap_sources` 表负责 24 小时调度、排队和 5 分钟租约恢复，由生命周期独立线程执行，不依赖浏览器。事务确认官网主机、配置修订及运行 token 后合并；失败不提交部分目录，配置变化后的旧结果不能写入。保留手动标题与旧页面，不自动删除；暂停保留目录，手动移除但仍在 Sitemap 的路径会再次加入。目录分母、日志保留与观测限制须同时表达，不把未观察当作从未抓取。
 - Vue 的 `views/` 负责页面绑定；`InventoryView.vue` 编排目录管理入口与紧凑同步摘要，`InventoryPanel.vue` 仅展示统计、表格及筛选（空目录保留列头），`SitemapPanel.vue` 和 `InventoryImportDialog.vue` 使用共用 `UiDialog.vue` 承载配置和手动导入。保存 / 导入成功关闭，失败在弹窗保留输入，取消重新打开初始化草稿。`utils/inventoryImport.ts` 校验文件格式、1 MiB 和 UTF-8，读取与提交有忙碌及卸载防护；工作区确认会话代次和官网主机后更新并返回成功结果。`PagesPanel.vue` 负责页面分析，`styles/analysis.css` 延续现有视觉；状态刷新不覆盖草稿，退出及迟到响应不能恢复受保护数据。
 - 表单统一使用 `UiInput.vue`、`UiSelect.vue`、`UiDatePicker.vue` 和 `UiFilePicker.vue`，由 `UiPopup.vue` 管理弹层定位、外部关闭及 Escape；`utils/controls.ts` 负责可测试的搜索与日期计算，`styles/controls.css` 负责控件状态。后续页面复用这些组件，保留键盘、标签、自动填充及禁用语义，不恢复可见的系统下拉、日期面板或文件按钮；文件选择仍使用隐藏 input 唤起系统文件对话框。
@@ -158,6 +159,7 @@ geo-monitor/
 
 - HTTP 验收已由真实 GitHub Linux CI `40856262530` 收口：257 项 Python / 2 个普通入口跳过、独立 Docker 部署 36 项及 HTTP / HTTPS 各 8 组矩阵通过。`support-http-deployment` 3 / 3 完成并同步两组正式规范，归档于 `openspec/changes/archive/2026-10-29-support-http-deployment/`，依据见 `docs/http-deployment-verification.md`。本机 Engine 仍不可用；低干扰由下一条独立专项证据确认。
 - 低干扰验收的 6 / 6 项任务已完成，`harden-collector-isolation` 同步两组规范并归档于 `openspec/changes/archive/2026-10-29-harden-collector-isolation/`，当前没有活动变更，仍为 12 组正式规范。GitHub Linux CI `40895324515`：267 项 Python / 2 个普通入口跳过、独立 Docker 部署 36 项、前端 35 项及类型构建、Ruff、wheel、Bash 均通过；两协议各 9 组矩阵确认实际 cgroup、CPU 节流、只读边界，各 1 次真实 OOM / 自动重启后续传去重及独立合成源站持续服务。维护者回传的官网只读 20 次请求均为 200、P95 13.866 ms、采集内存 30.73–30.84 MiB；工具未直接操作生产服务器，未在生产故障注入。证据和 Artifacts 摘要见 `docs/collector-isolation-verification.md`。生产峰值、长期负载、磁盘争用和轮转保留窗口仍按实际环境复验，无生产停采对照，不作零影响承诺。
+- 官网别名 `add-site-aliases` 的 4 / 4 项任务已完成，三组规范已同步，归档于 `openspec/changes/archive/2026-10-29-add-site-aliases/`，仍为 12 组正式能力。271 项 Python 通过 / 36 项本机 Linux 部署专项跳过、37 项前端、类型构建、Ruff、wheel 和严格规范通过；Edge 隔离浏览器验证保存 / 重载、未登记失败后自动恢复、路径去重、错误草稿、刷新、会话失效和迟到保存、正常退出及 320 px。修复已关闭 UiSelect 吞 Escape 的既有局部缺陷并在桌面 / 手机复验层级关闭。公开 XML 的 15 页别名解析通过，但本机代理 DNS 阻止直接受限下载，未复验生产服务器网络或容器；没有修改实际官网、自动添加真实别名或重装采集器，详见 `docs/site-aliases-verification.md`。
 
 - 首次启用从文件末尾建立采集基线，重启恢复已有读取状态；后台提交成功后才推进确认位置。
 - 重传使用稳定事件标识去重；心跳独立于业务日志，安静网站也能报告采集健康状态。

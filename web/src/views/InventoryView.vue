@@ -43,6 +43,6 @@ async function upload(text: string, format: string) { if (await importDirectory(
     @remove="removeDirectory" @select="openPage" @state="changeInventoryState"
     @page="changePage($event, true)"
   />
-  <SitemapPanel :open="dialog === 'sitemap'" :source="sitemapSource" :host="site?.domain ?? ''" :timezone="zone" :busy="busy" :loading="loading" :error="error" @close="closeDialog" @save="save" @sync="syncSitemap" />
+  <SitemapPanel :open="dialog === 'sitemap'" :source="sitemapSource" :host="site?.domain ?? ''" :aliases="site?.aliases ?? []" :timezone="zone" :busy="busy" :loading="loading" :error="error" @close="closeDialog" @save="save" @sync="syncSitemap" />
   <InventoryImportDialog :open="dialog === 'import'" :busy="busy" :error="error" @close="closeDialog" @import="upload" />
 </template>

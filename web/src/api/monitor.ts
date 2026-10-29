@@ -16,10 +16,10 @@ import type {
 
 export const monitorApi = {
   site: () => api<Site | null>('/site'),
-  saveSite: (domain: string, timezone: string, client_ip_mode: string) =>
+  saveSite: (domain: string, timezone: string, client_ip_mode: string, aliases: string[]) =>
     api<Site>('/site', {
       method: 'PUT',
-      body: JSON.stringify({ domain, timezone, client_ip_mode }),
+      body: JSON.stringify({ domain, timezone, client_ip_mode, aliases }),
     }),
   credentials: () => api<Credentials>('/site/credentials', { method: 'POST' }),
   overview: (params: URLSearchParams) => api<Overview>(`/overview?${params}`),

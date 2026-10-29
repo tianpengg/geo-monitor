@@ -10,6 +10,7 @@ const {
   busy,
   site,
   domain,
+  aliasDomains,
   timezone,
   ipMode,
   credentials,
@@ -44,8 +45,20 @@ const zoneOptions = computed(() => timezoneOptions(timezone.value))
             placeholder="www.example.com"
             required
             :disabled="busy"
-          /><small>填写域名，不包含协议、端口或路径。</small></label
-        ><label
+          /><small>填写域名，不包含协议、端口或路径。</small></label>
+        <label>官网别名（可选）<UiInput
+            v-model="aliasDomains"
+            multiline
+            rows="2"
+            aria-label="官网别名"
+            aria-describedby="siteAliasHelp"
+            placeholder="www.example.com"
+            maxlength="2600"
+            spellcheck="false"
+            :disabled="busy"
+          /><small id="siteAliasHelp">同一官网使用的其他域名，每行一个或用逗号分隔，最多 10 个。只填域名；保存后，Sitemap 和手动导入会接受这些域名的页面并按路径合并。</small></label>
+        <p class="notice neutral">www 与不带 www 的域名需要明确登记，未登记的子域不会自动放行。此处不修改 Nginx、主域名或采集器，也不能拆分混合多站日志。</p>
+        <label
           >统计时区<UiSelect
             v-model="timezone"
             :options="zoneOptions"

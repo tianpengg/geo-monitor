@@ -1,3 +1,4 @@
+import json
 import secrets
 import time
 from dataclasses import dataclass
@@ -68,11 +69,13 @@ def create_context(config: ServerConfig) -> ServerContext:
     def site() -> dict:
         with database.read() as conn:
             row = conn.execute(
-                "SELECT id,source_id,domain,timezone,client_ip_mode FROM site WHERE singleton=1"
+                "SELECT id,source_id,domain,timezone,client_ip_mode,aliases FROM site WHERE singleton=1"
             ).fetchone()
         if not row:
             raise HTTPException(404, "请先配置官网")
-        return dict(row)
+        result = dict(row)
+        result["aliases"] = json.loads(result["aliases"])
+        return result
 
     def collector_site(message: SourceMessage, authorization: str | None) -> dict:
         token = (

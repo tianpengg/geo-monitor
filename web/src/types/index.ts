@@ -5,6 +5,7 @@ export type Site = {
   domain: string
   timezone: string
   client_ip_mode: string
+  aliases: string[]
 }
 export type Session = { username: string; csrf_token: string }
 export type Gap = {

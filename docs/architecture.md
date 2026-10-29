@@ -40,7 +40,7 @@ Vue 的 App.vue 只提供工作区与选择页面，layouts 管理导航和外�
 
 动态爬虫规则由 `internal/crawler/catalog.py` 管理持久化及修订，`rules.py` 保存初始种子和完整词匹配，`fetch.py` 执行受限的公网 HTTPS 证据抓取，`evidence.py` 管理当前规则的证据及版本有效性。`internal/server/api/rules.py` 提供管理员接口，接收按同一批规则快照分类。稳定标识连接历史统计，历史事件保存原规则元数据。
 
-内容目录的本地解析和共用事务合并位于 `services/inventory.py`；`services/sitemap.py` 负责同官网主机的受限 HTTP/HTTPS 下载、单层索引和 gzip，`services/sitemap_sync.py` 管理 SQLite `sitemap_sources` 配置、排队、租约和原子提交。`api/inventory.py` 提供配置与同步入口，`lifecycle.py` 启动独立维护线程，采集器不参与 Sitemap 同步。远程 Sitemap 获取与官方核验证据抓取的协议限制分别维护。
+内容目录的本地解析和共用事务合并位于 `services/inventory.py`；`services/sitemap.py` 负责官网主域及登记别名的受限 HTTP/HTTPS 下载、单层索引和 gzip，每个下载使用 URL 自身的主机校验公网 IP / TLS。`services/sitemap_sync.py` 管理 SQLite `sitemap_sources` 配置、排队、租约和原子提交，官网表的 `aliases` JSON 列提供精确允许清单；别名或主域变化与修订递增和运行 token 失效保持同一事务。`api/inventory.py` 提供配置与同步入口，`lifecycle.py` 启动独立维护线程，采集器不参与 Sitemap 同步。远程 Sitemap 获取与官方核验证据抓取的协议限制分别维护。
 
 目录前端由 `views/InventoryView.vue` 编排紧凑同步摘要、入口与弹窗开关，`InventoryPanel.vue` 只呈现覆盖统计、表格及分页，空目录仍保留列头。`SitemapPanel.vue` 与 `InventoryImportDialog.vue` 复用 `UiDialog.vue` 及自定义控件，分别承载同步配置和文件导入，成功关闭、失败留存输入、取消清理草稿。`utils/inventoryImport.ts` 校验和读取 UTF-8 文件，组件负责读取忙碌及卸载代次保护；`useWorkspace.ts` 返回明确的保存 / 导入成功结果并检查会话和主机，迟到响应不恢复受保护数据。样式归入 `analysis.css`，共用弹窗首次焦点跳过隐藏文件 input 并选择可见文件按钮。
 

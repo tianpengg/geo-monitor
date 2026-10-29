@@ -15,7 +15,7 @@ MAX_FILE_BYTES = 1024 * 1024
 MAX_PAGES = 10000
 
 
-def normalize_page(value, host):
+def normalize_page(value, host, aliases=()):
     if not isinstance(value, str) or not value.strip() or len(value) > 4096:
         raise ValueError("目录地址无效或过长")
     value = value.strip()
@@ -27,7 +27,7 @@ def normalize_page(value, host):
             hostname = (url.hostname or "").encode("idna").decode().lower().rstrip(".")
             if (
                 url.scheme not in {"http", "https"}
-                or hostname != host
+                or hostname not in {host, *aliases}
                 or url.username is not None
                 or url.password is not None
                 or url.port not in {None, 443 if url.scheme == "https" else 80}
@@ -37,10 +37,10 @@ def normalize_page(value, host):
             raise ValueError("目录需要完整同站地址或以 / 开头的路径")
         return url.path or "/"
     except (ValueError, UnicodeError):
-        raise ValueError("目录含无效、非本站或不支持的地址") from None
+        raise ValueError("目录含无效、非本站或不支持的地址；同站 www 等域名请先在官网配置登记别名") from None
 
 
-def parse_inventory(text, format, host):
+def parse_inventory(text, format, host, aliases=()):
     if not text or len(text.encode("utf-8")) > MAX_FILE_BYTES:
         raise ValueError("文件为空或超过 1 MiB")
     text = text.removeprefix("\ufeff")
@@ -82,16 +82,26 @@ def parse_inventory(text, format, host):
                 value = entry
             if not isinstance(title, str) or len(title) > 300 or any(ord(c) < 32 for c in title):
                 raise ValueError("页面标题无效或超过 300 字符")
-            pages[normalize_page(value, host)] = title
+            pages[normalize_page(value, host, aliases)] = title
         return pages
     except (ElementTree.ParseError, json.JSONDecodeError, csv.Error, RecursionError):
         raise ValueError("文件格式无效，请检查 XML、CSV 或 JSON 内容") from None
 
 
 def import_pages(database, site, text, format):
-    pages = parse_inventory(text, format, site["domain"])
+    pages = parse_inventory(text, format, site["domain"], site.get("aliases", ()))
     with database.transaction() as conn:
+        assert_current_site(conn, site)
         return merge_pages(conn, site, pages)
+
+
+def assert_current_site(conn, site):
+    row = conn.execute("SELECT domain,aliases FROM site WHERE id=?", (site["id"],)).fetchone()
+    if (
+        not row or row["domain"] != site["domain"]
+        or json.loads(row["aliases"]) != list(site.get("aliases", ()))
+    ):
+        raise ValueError("官网或别名配置已变更，请刷新后重试")
 
 
 def merge_pages(conn, site, pages, *, preserve_titles=False):
@@ -121,7 +131,7 @@ def merge_pages(conn, site, pages, *, preserve_titles=False):
 
 
 def remove_page(database, site, path):
-    path = normalize_page(path, site["domain"])
+    path = normalize_page(path, site["domain"], site.get("aliases", ()))
     with database.transaction() as conn:
         deleted = conn.execute(
             "DELETE FROM content_pages WHERE site_id=? AND host=? AND path=?",

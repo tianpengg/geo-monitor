@@ -38,6 +38,7 @@ export function useWorkspace() {
   const {
     site,
     domain,
+    aliasDomains,
     timezone,
     ipMode,
     credentials,
@@ -316,9 +317,13 @@ export function useWorkspace() {
     }
   }
   async function loadSite() {
-    site.value = await monitorApi.site()
+    const generation = workspaceEpoch
+    const current = await monitorApi.site()
+    if (generation !== workspaceEpoch || !loggedIn.value) return
+    site.value = current
     if (site.value) {
       domain.value = site.value.domain
+      aliasDomains.value = (site.value.aliases ?? []).join('\n')
       timezone.value = site.value.timezone
       ipMode.value = site.value.client_ip_mode
       tab.value = 'overview'
@@ -537,6 +542,7 @@ export function useWorkspace() {
     success,
     site,
     domain,
+    aliasDomains,
     timezone,
     ipMode,
     overview,

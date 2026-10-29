@@ -1,4 +1,4 @@
-"""Bounded, same-host Sitemap downloads. Content pages are never fetched."""
+"""Bounded Sitemap downloads for an explicit host allowlist. Pages are never fetched."""
 
 import gzip
 import http.client
@@ -21,7 +21,7 @@ class SitemapError(ValueError):
     """Only fixed, safe messages from this module may be shown or persisted."""
 
 
-def sitemap_url(value, host):
+def sitemap_url(value, host, aliases=()):
     try:
         value = value.strip()
         parsed = urlsplit(value)
@@ -29,14 +29,14 @@ def sitemap_url(value, host):
         if (
             not value or len(value) > 2048 or "\\" in value
             or any(ord(char) < 33 for char in value)
-            or parsed.scheme not in {"http", "https"} or hostname != host
+            or parsed.scheme not in {"http", "https"} or hostname not in {host, *aliases}
             or parsed.username is not None or parsed.password is not None or parsed.fragment
             or parsed.port not in {None, 443 if parsed.scheme == "https" else 80}
         ):
             raise ValueError
         return urlunsplit((parsed.scheme, hostname, parsed.path or "/", parsed.query, ""))
     except (ValueError, UnicodeError):
-        raise SitemapError("请填写当前官网同主机、无凭据的标准 HTTP/HTTPS Sitemap 地址") from None
+        raise SitemapError("请填写官网主域名或已登记别名的标准 HTTP/HTTPS Sitemap 地址；别名请在官网配置保存") from None
 
 
 def remaining(deadline):
@@ -128,7 +128,7 @@ def xml_document(payload):
         raise SitemapError("Sitemap 不是有效的 UTF-8 XML 或 gzip 文件") from None
 
 
-def collect_pages(url, host, fetch=None):
+def collect_pages(url, host, fetch=None, *, aliases=()):
     fetch = fetch or download
     deadline = time.monotonic() + TASK_SECONDS
     pages, seen = {}, set()
@@ -136,14 +136,14 @@ def collect_pages(url, host, fetch=None):
 
     def read(address):
         nonlocal total_bytes
-        address = sitemap_url(address, host)
+        address = sitemap_url(address, host, aliases)
         if address in seen:
             raise SitemapError("Sitemap 索引存在重复或循环引用")
         if len(seen) >= MAX_FILES:
             raise SitemapError("Sitemap 文件总数超过 20 个（包含索引）")
         seen.add(address)
         remaining(deadline)
-        result = xml_document(fetch(address, host, deadline))
+        result = xml_document(fetch(address, urlsplit(address).hostname, deadline))
         remaining(deadline)
         total_bytes += result[2]
         if total_bytes > MAX_TOTAL_BYTES:
@@ -157,9 +157,9 @@ def collect_pages(url, host, fetch=None):
             raise SitemapError("Sitemap 输入页面超过 10000 条")
         for location in locations:
             try:
-                pages[normalize_page(location, host)] = ""
+                pages[normalize_page(location, host, aliases)] = ""
             except ValueError:
-                raise SitemapError("Sitemap 含无效、非本站或不支持的页面地址") from None
+                raise SitemapError("Sitemap 含无效、非本站或不支持的页面地址；同站 www 等域名请先在官网配置登记别名") from None
 
     kind, locations, _ = read(url)
     if kind == "urlset":
@@ -168,7 +168,7 @@ def collect_pages(url, host, fetch=None):
         if len(locations) + 1 > MAX_FILES:
             raise SitemapError("Sitemap 文件总数超过 20 个（包含索引）")
         # Validate every child before any child is requested.
-        children = [sitemap_url(location, host) for location in locations]
+        children = [sitemap_url(location, host, aliases) for location in locations]
         for address in children:
             child_kind, child_locations, _ = read(address)
             if child_kind != "urlset":

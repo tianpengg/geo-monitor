@@ -19,8 +19,10 @@ from internal.server.app import create_app
 
 def sitemap_fixture(url, host, deadline):
     """Explicit QA injection: no network request and never wired into production."""
-    if host != "preview.example.test":
+    if host not in {"preview.example.test", "www.preview.example.test"}:
         raise ValueError("fixture only supports the seeded QA host")
+    if url in {"https://preview.example.test/aliases.xml", "https://www.preview.example.test/sitemap.xml"}:
+        return b'<urlset><url><loc>https://www.preview.example.test/products</loc></url><url><loc>https://preview.example.test/products</loc></url><url><loc>https://www.preview.example.test/about</loc></url></urlset>'
     if url == "https://preview.example.test/sitemap.xml":
         return b'<sitemapindex><sitemap><loc>https://preview.example.test/pages.xml</loc></sitemap></sitemapindex>'
     if url == "https://preview.example.test/pages.xml":

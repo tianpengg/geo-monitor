@@ -11,6 +11,7 @@ const props = defineProps<{
   open: boolean
   source: SitemapSource | null
   host: string
+  aliases: string[]
   timezone: string
   busy: boolean
   loading: boolean
@@ -36,7 +37,8 @@ const unavailable = computed(() => props.busy || props.loading || !props.source)
       <p v-if="error" ref="alert" class="notice danger" role="alert" tabindex="-1">{{ error }}</p>
       <label>官网 Sitemap 地址<UiInput v-model="url" type="url" aria-label="官网 Sitemap 地址" :placeholder="`https://${host}/sitemap.xml`" :disabled="unavailable" maxlength="2048" required /></label>
       <label class="sitemap-frequency">自动同步<UiSelect v-model="enabled" aria-label="Sitemap 自动同步" :options="[{value:'true',label:'每天自动同步'}, {value:'false',label:'暂停自动同步'}]" :disabled="unavailable" /></label>
-      <p class="section-subtitle sitemap-note">支持当前官网同主机的 HTTP / HTTPS、普通 Sitemap、单层索引和 gzip。启用后每 24 小时同步一次；仅合并页面，保留已有标题，不自动删除旧页面。</p>
+      <p class="section-subtitle sitemap-note">支持官网主域名及已登记别名的 HTTP / HTTPS、普通 Sitemap、单层索引和 gzip。启用后每 24 小时同步一次；仅合并页面，保留已有标题，不自动删除旧页面。</p>
+      <p class="section-subtitle sitemap-note sitemap-allowed-hosts">允许域名：{{ [host, ...aliases].filter(Boolean).join('、') }}。如清单使用其他同站域名，请先到“官网配置 → 官网别名”登记并保存。</p>
     </form>
     <template v-if="source && source.revision">
       <div class="sitemap-dialog-status"><span>已保存配置的同步状态</span><span :class="['badge', source.state === 'failed' ? 'warning' : source.state === 'success' ? 'success' : 'neutral']" role="status">{{ syncLabel }}</span></div>
@@ -49,7 +51,7 @@ const unavailable = computed(() => props.busy || props.loading || !props.source)
       <p v-if="source.last_error" class="notice danger sitemap-error" role="alert">{{ source.last_error }}。已有目录与最后成功结果保持保留。</p>
       <div class="sitemap-actions"><p class="section-subtitle">已保存地址：<span>{{ source.url }}</span></p><button type="button" class="secondary-button" :disabled="unavailable || active" @click="emit('sync')"><UiIcon name="refresh" />{{ active ? '等待同步完成' : '立即同步' }}</button></div>
     </template>
-    <details class="format-help sitemap-help"><summary><UiIcon name="chevron-right" />同步范围与限制</summary><p class="paragraph muted">最多 20 个文件（包含索引），单文件下载及解压后各 1 MiB，累计解压 10 MiB，最多 10,000 页。不会访问页面正文；拒绝内网、跨站、跳转及无效 XML。失败后保留目录并按周期重试。手动移除但仍在 Sitemap 的页面，下次同步会重新加入；暂停不删除目录。立即同步使用已保存地址，状态随页面自动刷新。</p></details>
+    <details class="format-help sitemap-help"><summary><UiIcon name="chevron-right" />同步范围与限制</summary><p class="paragraph muted">最多 20 个文件（包含索引），单文件下载及解压后各 1 MiB，累计解压 10 MiB，最多 10,000 页。不会访问页面正文；拒绝内网、未登记域名、跳转及无效 XML，每个文件的域名独立校验证书与公网地址。失败后保留目录并按周期重试。手动移除但仍在 Sitemap 的页面，下次同步会重新加入；暂停不删除目录。立即同步使用已保存地址，状态随页面自动刷新。</p></details>
     <template #footer><button type="button" class="secondary-button" :disabled="busy" @click="emit('close')">取消</button><button type="submit" :form="formId" class="primary-button" :disabled="unavailable || !url.trim()">{{ busy ? '正在处理…' : enabled === 'true' ? '保存并同步' : '保存配置' }}</button></template>
   </UiDialog>
 </template>
