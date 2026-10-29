@@ -1,0 +1,47 @@
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "geo-monitor"
+version = "0.1.0"
+description = "Self-hosted origin-log monitoring for identifiable AI crawlers"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.13,<3.15"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "uvicorn>=0.30,<1",
+  "httpx>=0.27,<1",
+  "pydantic>=2.10,<3",
+  "tzdata>=2025.1",
+]
+
+[project.scripts]
+geo-monitor-server = "internal.server.cli:main"
+geo-monitor-collector = "internal.collector.cli:main"
+
+[project.urls]
+Repository = "https://github.com/tianpengg/geo-monitor"
+Documentation = "https://github.com/tianpengg/geo-monitor#readme"
+Issues = "https://github.com/tianpengg/geo-monitor/issues"
+
+[dependency-groups]
+dev = ["pytest>=8,<10", "ruff>=0.9,<1", "build>=1.2,<2"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["internal"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+cache_dir = ".local/cache/pytest"
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+cache-dir = ".local/cache/ruff"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]

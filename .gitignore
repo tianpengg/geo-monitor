@@ -1,0 +1,36 @@
+# 本地凭据与环境配置
+.env
+.env.*
+!.env.example
+**/collector.json
+**/collector-env.sh
+*.sqlite
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-wal
+*.db-shm
+*.key
+*.pem
+*.p12
+*.log
+!tests/fixtures/*.log
+
+# 运行数据和构建产物
+/.local/
+/data/
+/collector-state/
+/build/
+/dist/
+/web/node_modules/
+/web/dist/
+
+# Python 本地环境与缓存
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+/output/
+/.playwright-cli/

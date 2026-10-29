@@ -1,0 +1,15 @@
+.git
+.agents
+.venv
+.local
+**/__pycache__
+**/.pytest_cache
+**/node_modules
+web/dist
+data
+collector-state
+.env
+**/.env
+**/collector.json
+output
+tests

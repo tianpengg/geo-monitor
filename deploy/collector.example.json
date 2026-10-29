@@ -1,0 +1,13 @@
+{
+  "server_url": "https://monitor.example.com",
+  "site_id": "REPLACE_SITE_ID",
+  "source_id": "REPLACE_SOURCE_ID",
+  "token": "REPLACE_COLLECTOR_TOKEN",
+  "log_path": "/logs/example.com.log",
+  "state_path": "/state/state.json",
+  "batch_size": 200,
+  "flush_seconds": 10,
+  "catchup_pause_seconds": 0.25,
+  "heartbeat_seconds": 30,
+  "allow_http": false
+}

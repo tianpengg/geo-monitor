@@ -1,0 +1,54 @@
+schema: spec-driven
+
+context: |
+  项目名称：geo-monitor。
+  MVP 目标：用户在官网服务器安装一次采集器，持续查看可识别的 AI 爬虫访问。
+  部署边界：一个管理员、一个官网、一条独立的 Nginx Combined 日志来源；支持 Linux、宝塔及 Docker。
+  当前架构：单仓库，Python + FastAPI 服务端，Python 独立采集器，Vue 3 + TypeScript + Vite 后台，SQLite 单实例持久化。
+  Python 代码直接采用 internal/ 包，统一 internal.* 导入，cmd/server/main.py 和 cmd/collector/main.py 提供显式入口，前端位于 web/src/，Python 单元测试位于 tests/unit/；依赖已锁定在 uv.lock 和 web/package-lock.json。
+  SQLite 含官方 WAL-reset 修复的版本启用 WAL，其他版本使用事务性的 DELETE 模式；容量验收记录实际模式。
+  采集器作为独立进程和容器运行，不挂在 FastAPI 生命周期或 Web worker 启动任务中。
+  活动变更 harden-collector-isolation 补齐低干扰边界：每轮新增源数据读取 256 KiB（元数据与身份锚点除外），超长行只保留内存扫描游标、完整后确认，空闲不重复落盘，退休代次回收，确认保存失败回退内存位置及计数。积压等待默认 0.25 秒、范围 0.05–30 秒，失败退避和独立心跳保持。Compose 默认 0.25 CPU / 128 MiB / 64 PID、只读根文件系统、16 MiB tmpfs 及有限输出日志；CPU / 内存可显式覆盖。构建开销不受运行限额约束，真实 cgroup、OOM、官网延迟与错误率待 Docker / 生产接入验收；不宣称零影响，报告见 docs/completeness-audit.md，未验收前不归档或同步为全部完成。
+  只采集首次启用后的新增日志；按分钟更新看板；源站日志可能不包含 CDN 缓存命中和边缘拦截请求。
+  日志格式兼容标准 Combined 和末尾恰好多一个带引号字段的 OpenResty main；预检与运行共用严格口径，附加字段不出解析器、不用于覆盖第一列 IP 或自动信任代理。已在一例 1Panel 站点只读核对宿主机日志，通用部署指引为 docs/1panel-deployment.md。维护者后续反馈已完成 HTTP 部署及基础采集展示测试；该反馈尚未由工具独立复验，不替代完整故障及资源专项验收。
+  support-openresty-main-logs 已完成 3 项任务并同步归档，新增 12 项回归，完整 Python 为 223 passed / 36 skipped，Ruff、wheel 及规范校验通过；源码交付包不含实际配置和运行数据。原 HTTP 部署及采集隔离的 Linux / 真实官网待验事项不变。
+  原始 IP 只用于核验，业务持久化数据须脱敏；采集器仅保存位置和重试元数据，从保留的源日志重读未确认数据。
+  国内平台按已确认口径展示：Kimi 三种 UA；Bytespider 为字节跳动爬虫；HySpider 为腾讯混元训练爬虫；不得推定豆包或元宝归属。
+  千问、DeepSeek 无已确认专属规则时标记识别能力待完善，不将未知请求直接归属给它们。
+  首版不包含品牌引用、内容评分、GEO 权重、转化分析、爬虫访问控制、通知告警和 CDN 接入。
+  当前用户授权先完整开发专注的监测增强：页面排行及详情、路径与响应核验筛选、同条件有界 CSV、官方身份扩充、本地内容目录及观察盲区；开发期间执行隔离测试，真实官网统一接入验收放在最后。目录绑定导入主机，最多 1 MiB 和 10000 页；CSV 最多 10000 条及 20 MiB，超限明确拒绝。未观察、日志覆盖及保留限制须分别表达，不声称从未抓取。
+  监测增强已完成并归档 extend-crawler-analysis：116 项 Python、12 项前端测试、构建打包、隔离浏览器及含新增管理接口的 Docker 基础冒烟通过，验收见 docs/analysis-verification.md。正式能力规范累计 12 组；规则版本 2026-10-28.3，20 个 HTTP 身份。真实官网接入及生产容量验收仍待执行。
+  表单控件已统一为浅色靛蓝的共用输入、可搜索下拉、自定义日历和文件选择区，不显示原生下拉、日期面板或文件按钮；保留自动填充、键盘焦点、禁用及既有业务验证。文件对话框通过隐藏 input 打开。共用控件与弹层位于 web/src/components/ui，辅助计算及样式位于 utils/controls.ts / styles/controls.css，后续页面复用；不新增生产依赖。17 项前端测试、生产构建与隔离浏览器验收通过，含 320 px 弹层；详见 docs/controls-verification.md，规范仍为 12 组。
+  首版功能、交互、API 及受控验收已完成，初始变更已归档。用户已确认浅色首页参考 Dub 的视觉与 OpenPanel 的信息层级；无人物的独立 HTML 预览已验收归档，正式 Vue 已集成该视觉并接入真实 API，包含概览、明细、健康、配置安装及登录；演示数据仅用于独立预览和隔离验收。前端共用组件与呈现转换有测试，浏览器验收见 docs/frontend-verification.md。用户已确认先使用合成测试基线进行容量验证，生产峰值日志量、平均行大小及源日志保留期限在生产部署前补充并复验。
+  用户已明确目录按 cmd、internal、web、deploy、scripts、tests、docs、openspec 分工，不添加 internal/geo_monitor 层或 ops 合并目录；本地数据、构建包、验收及缓存归入 .local，显式配置和原生产卷保持兼容。Vue 分为页面、布局、基础与业务组件、composables、api、types、utils、styles，App 只组装；FastAPI 分离 api、services、模型、依赖和生命周期。目录职责见 docs/architecture.md。
+  目录整理已完成并归档 reorganize-project-structure：117 项 Python、19 项前端、严格类型检查、生产构建、wheel、隔离浏览器及 8 组完整 Linux Docker / HTTPS 验收通过，记录见 docs/structure-verification.md；已同步部署规范，仍为 12 组正式规范。
+  Linux / 1Panel 控制台一条命令入口为 scripts/deploy.sh，默认从完整源码交互生成受限 deploy/.env，复用既有配置和卷，构建启动并检查健康；采集器模式复用既有安装流程。密码不作为参数或输出，1Panel 证书、反向代理和官网日志由管理员配置，不将容器就绪当作公网或真实官网已接入。回归通过隔离 Linux 执行器 tests/deployment/deploy_script.py 执行。
+  用户已授权 HTTP 一键部署与采集器 HTTP 上报，HTTPS 保留可选；新地址的协议决定 Cookie 与绑定：HTTP 默认 0.0.0.0、Cookie false，默认端口跟随地址（省略为 80）；HTTPS 本机绑定、Cookie true、上游默认 8000，继续验证证书且禁止下载降级。HTTP 安装显式生成 allow_http:true 并提示凭据、会话与源日志明文传输。既有配置须手动一致地切换，原数据与读取状态保留；不自动配置证书、代理或防火墙。
+  遵循项目根目录 AGENTS.md 中的工作原则和 OpenSpec 工作流。
+  用户授权将爬虫规则动态化，后台维护名称、UA 完整词、运营方、归属、HTTPS 证据地址与格式、启停。现有 20 个身份仅作初始种子，SQLite 持久化后不覆盖编辑；稳定标识、修订冲突、每批快照及历史不回算保持一致。动态证据抓取拒绝内网及重定向，连接固定到已检查的公网 IP，验证原主机证书，旧刷新不能覆盖新配置。未配置官网也可管理规则，新增规则不自动获得核验或官方背书。
+  动态规则已完成并归档 manage-crawler-rules：145 项 Python（含新增 25 项规则管理）、25 项前端、类型构建、Ruff、wheel 和隔离浏览器通过，验收见 docs/crawlers.md；两组规范已同步，仍为 12 组。36 项部署专用测试未执行，HTTP 活动变更仍待 Docker 恢复验收。
+  规则页改为全宽表格，新增和编辑使用共用 UiDialog 弹窗，保留失败草稿、取消、键盘焦点、下拉及忙碌保护；手机表格自身横向滚动，弹窗内部滚动。compact-crawler-rule-management 已完成前端 25 项、类型构建及实际浏览器验收并同步归档；没有后端变化，部署待验边界保持不变。
+  内容目录支持配置当前官网同主机标准 HTTP/HTTPS Sitemap，启用保存立即排队、每 24 小时自动同步，可暂停及立即同步；支持 urlset、单层索引和 gzip，不下载页面正文，保留本地导入。最多 20 文件、传输及解压单文件各 1 MiB、累计 10 MiB / 10000 页；拒绝内网、重定向、DTD、实体和嵌套索引。事务确认主机、修订及租约 token 后合并并保留标题及旧页，失败不提交部分数据。services/sitemap.py 负责获取，sitemap_sync.py 和独立维护线程负责持久调度；SitemapPanel 复用现有控件和工作区隔离。sync-remote-sitemap 已验收并同步归档：194 项 Python、25 项前端、类型构建、Ruff、wheel 及隔离浏览器通过，详见 docs/operations.md；36 项部署测试和真实官网继续待验。
+  内容目录主页面现优先展示统计和表格，Sitemap 配置与手动导入各用 UiDialog 弹窗，InventoryView 保留紧凑同步摘要和失败警示，InventoryPanel 不承载表单；SitemapPanel 为配置弹窗，InventoryImportDialog 为导入弹窗，utils/inventoryImport.ts 校验有界 UTF-8 文件。成功关闭、失败保留输入，取消重置，读取及提交忙碌保护，工作区确认会话代次与主机后更新；空目录保留列头。compact-content-inventory 已通过 30 项前端、类型构建及实际浏览器（含 320 px、分页筛选、迟到响应）并同步归档，详见 docs/operations.md；没有后端变化，部署待验边界不变。
+  官网统计时区改用自定义可搜索下拉，utils/timezones.ts 合并中文常用地区、浏览器目录及当前已保存值，目录失败回退且不静默重置；保持 Asia/Shanghai 新站默认及 IANA 保存协议。SiteView 解释日期边界、显示和夏令时；日志第一列 IP 采用 unknown / trusted 的直白说明，不确定时正常采集和 UA 识别，不自动改 Nginx 或历史核验。clarify-site-settings 已通过 35 项前端、类型构建及隔离浏览器（保存重载、键盘、320 px）并同步归档，详见 docs/operations.md；没有后端变化。
+  所有规范和说明使用简体中文，保留 OpenSpec 要求的英文结构标题及 SHALL/MUST、WHEN/THEN 关键字。
+
+rules:
+  proposal:
+    - 明确要解决的问题、变更范围和可验收的结果，保持提案简洁。
+  specs:
+    - 需求必须可验证，使用场景描述预期行为，并覆盖相关边界和异常情况。
+  design:
+    - 仅记录实现所需的技术决策、约束和取舍；采用满足当前需求的最简单方案。
+  tasks:
+    - 将实现和必要验证拆分为可执行、可检查的任务，避免范围外工作。
+    - 缺陷修复和业务逻辑变更包含相关回归验证；简单文档或配置修改采用直接检查。
+
+operations:
+  apply:
+    guidance:
+      - 在已有授权范围内持续完成实施和必要验证，修复本次改动的问题后交付。
+      - 只有目标、范围、验收或授权存在实质歧义时才询问，不重复请求已有授权。
+  archive:
+    guidance:
+      - 确认任务和必要验证均已完成，同步相关规范，并简要记录验证结果与剩余限制。

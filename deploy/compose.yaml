@@ -1,0 +1,27 @@
+name: geo-monitor
+services:
+  monitor:
+    build:
+      context: ..
+      dockerfile: deploy/server.Dockerfile
+    restart: unless-stopped
+    stop_grace_period: 40s
+    environment:
+      GEO_ADMIN_USERNAME: ${GEO_ADMIN_USERNAME:-admin}
+      GEO_ADMIN_PASSWORD: ${GEO_ADMIN_PASSWORD:?Set GEO_ADMIN_PASSWORD}
+      GEO_PUBLIC_URL: ${GEO_PUBLIC_URL:?Set GEO_PUBLIC_URL}
+      GEO_COOKIE_SECURE: ${GEO_COOKIE_SECURE:-true}
+      GEO_DATABASE: /app/data/monitor.sqlite3
+    ports:
+      - "${GEO_BIND_ADDRESS:-127.0.0.1}:${GEO_PORT:-8000}:8000"
+    volumes:
+      - monitor-data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/healthz',timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    security_opt:
+      - no-new-privileges:true
+volumes:
+  monitor-data:

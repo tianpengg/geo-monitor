@@ -1,0 +1,32 @@
+name: 问题报告
+description: 报告可复现的功能、采集或部署问题
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: "请勿粘贴密码、采集凭据、Cookie、原始日志或数据库。安全漏洞请使用仓库 Security 的私密报告入口。"
+  - type: input
+    id: version
+    attributes:
+      label: 项目版本或提交
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: 运行环境
+      description: 操作系统、Docker / Compose 版本、Nginx / OpenResty、是否使用 CDN 或代理。
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 复现步骤及预期结果
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 实际结果与脱敏错误摘要
+    validations:
+      required: true
