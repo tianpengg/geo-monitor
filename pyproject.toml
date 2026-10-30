@@ -7,7 +7,7 @@ name = "geo-monitor"
 version = "0.1.0"
 description = "Self-hosted origin-log monitoring for identifiable AI crawlers"
 readme = "README.md"
-license = "MIT"
+license = "Apache-2.0"
 license-files = ["LICENSE"]
 requires-python = ">=3.13,<3.15"
 dependencies = [

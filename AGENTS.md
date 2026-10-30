@@ -121,7 +121,7 @@ geo-monitor/
 
 ## 目录与规范维护
 
-- 公开仓库使用 MIT；LICENSE 须随 Python 包、镜像和采集器下载包保留，第三方素材保留原许可。发布前检查待提交文件，实际凭据、日志、数据库、采集状态、运行环境及私人部署说明不得公开；文档使用保留地址和示例域名。通用部署说明为 `docs/1panel-deployment.md`，首次发布记录为 `docs/public-release.md`。
+- 公开仓库使用 Apache-2.0；LICENSE 须随 Python 包、镜像和采集器下载包保留，第三方素材保留原许可。发布前检查待提交文件，实际凭据、日志、数据库、采集状态、运行环境及私人部署说明不得公开；文档使用保留地址和示例域名。通用部署说明为 `docs/1panel-deployment.md`，首次发布及后续许可变更记录为 `docs/public-release.md`。
 
 - 用户明确指定的一级目录为 `cmd/`、`internal/`、`web/`、`deploy/`、`scripts/`、`tests/`、`docs/` 和 `openspec/`。不得自行恢复 `src/`、嵌套 `internal/geo_monitor/` 或合并为 `ops/`。入口只调用内部 CLI，页面与业务逻辑不得堆入入口文件。
 - 本地数据、Python 构建包、验收输出与工具缓存统一写入 `.local/`；`.venv/`、`web/node_modules/`、`web/dist/` 及工具标准隐藏目录保持各自位置。显式数据库配置优先，旧默认库有兼容回退；生产持久化卷位置不变。

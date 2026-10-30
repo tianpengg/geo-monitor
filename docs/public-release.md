@@ -2,6 +2,10 @@
 
 日期：2026-10-29。目标：公开仓库 `tianpengg/geo-monitor`，初始版本 0.1.0，MIT 许可证。
 
+当前项目许可已于 2026-10-30 按维护者要求改为 Apache-2.0，见根目录 [LICENSE](../LICENSE)。本页首次发布记录及归档中的 MIT 描述保留当时事实；当前 README、贡献指南、Python / 前端包元数据和正式规范统一使用 Apache-2.0，第三方素材及工作流文件保留原许可。
+
+本次许可变更验证：`tests/unit/server/test_deployment.py` 的 3 项回归通过；重新构建 wheel，确认 `License-Expression: Apache-2.0`、`License-File: LICENSE` 及包内许可与根文件一致；前端包与锁文件的项目许可一致，依赖锁定内容未变；12 组正式规范严格校验通过。已核对两个 Dockerfile 继续复制 LICENSE，本次未执行镜像构建或容器验收。
+
 ## 公开内容
 
 - README 面向使用者介绍功能、数据流、HTTP / HTTPS 部署、采集器安装和识别边界。

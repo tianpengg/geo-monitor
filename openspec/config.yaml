@@ -4,7 +4,7 @@ context: |
   项目名称：geo-monitor。
   官网别名 add-site-aliases 的 4 项任务已完成并同步三组规范、归档于 2026-10-29-add-site-aliases，正式能力仍为 12 组。管理员登记最多 10 个精确域名，旧库默认空列表；Sitemap / 索引 / 页面及本地导入接受主域与已保存别名，实际文件按自身主机执行公网 IP 和 TLS 校验。配置变化失效旧任务并重排启用同步，保持单站身份、目录及凭据。271 项本机 Python / 36 部署专项跳过、前端 37 项、类型构建、Ruff、wheel、严格规范及 Edge 隔离浏览器通过，未重跑新版实际容器或生产网络，详见 docs/site-aliases-verification.md；不将旧 CI 容器结果冒充本版执行。
   最新验收状态（2026-10-29）：support-http-deployment 的 3 项和 harden-collector-isolation 的 6 项均已完成、同步正式规范并归档，当前没有活动变更，正式规范为 12 组。GitHub Linux CI 40895324515 通过 267 项 Python / 2 个普通入口跳过、独立部署 36 项、前端 35 项及 HTTP / HTTPS 各 9 组矩阵；实际 cgroup、CPU 节流、只读拒绝、真实 OOM / 自动恢复及独立合成源站持续服务均有 JSON 证据。维护者另回传真实官网 20 次只读观测，全部 HTTP 200、P95 13.866 ms、采集内存 30.73–30.84 MiB。本机 Engine 仍不可用；结果见 docs/http-deployment-verification.md 和 docs/collector-isolation-verification.md，不把合成或有限窗口观测解释为生产零影响。下方历次验收计数和待验描述仅表示当时状态。
-  公开仓库为 https://github.com/tianpengg/geo-monitor，用户选择 MIT；项目及第三方许可随对应源码 / Python 包 / 镜像 / 采集器分发保留。公开说明使用保留地址和示例域名，不公开私人部署说明或实际运行数据。首次开源发布记录见 docs/public-release.md；维护者基础接入反馈与完整专项验收保持区分。
+  公开仓库为 https://github.com/tianpengg/geo-monitor，当前项目许可为用户选择的 Apache-2.0；项目及第三方许可随对应源码 / Python 包 / 镜像 / 采集器分发保留。公开说明使用保留地址和示例域名，不公开私人部署说明或实际运行数据。首次开源发布及后续许可变更记录见 docs/public-release.md；维护者基础接入反馈与完整专项验收保持区分。
   MVP 目标：用户在官网服务器安装一次采集器，持续查看可识别的 AI 爬虫访问。
   部署边界：一个管理员、一个官网、一条独立的 Nginx Combined 日志来源；支持 Linux、宝塔及 Docker。
   当前架构：单仓库，Python + FastAPI 服务端，Python 独立采集器，Vue 3 + TypeScript + Vite 后台，SQLite 单实例持久化。

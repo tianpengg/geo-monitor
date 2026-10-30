@@ -5,7 +5,7 @@
 Self-hosted AI crawler monitoring from origin access logs.
 
 [![Checks](https://github.com/tianpengg/geo-monitor/actions/workflows/ci.yml/badge.svg)](https://github.com/tianpengg/geo-monitor/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
 
 geo-monitor 是一个基于源站访问日志的自托管监测工具。在官网服务器安装独立采集器，以只读方式持续读取新增日志，在后台查看 AI 爬虫访问、来源核验、页面覆盖和采集健康状态。
 
@@ -133,4 +133,4 @@ uv build --wheel --out-dir .local/build/python
 
 ## 许可证
 
-项目代码使用 [MIT License](LICENSE)。Inter 字体、Tabler 图标及生成的 OpenSpec 工作流文件保留各自许可和归属，详见 [第三方许可说明](THIRD_PARTY_NOTICES.md)。本项目与所列爬虫运营方不存在官方关联或背书。
+项目代码使用 [Apache License 2.0](LICENSE)（SPDX：`Apache-2.0`）。Inter 字体、Tabler 图标及生成的 OpenSpec 工作流文件保留各自许可和归属，详见 [第三方许可说明](THIRD_PARTY_NOTICES.md)。本项目与所列爬虫运营方不存在官方关联或背书。
